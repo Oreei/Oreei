@@ -1,0 +1,130 @@
+Sub NeedlemanWunschAlgorithm()
+    Dim refPeptide As String
+    Dim workPeptide As String
+    Dim scoreMatrix() As Integer
+    Dim tracebackMatrix() As String
+    Dim blosum62(20, 20) As Integer
+    Dim aminoAcids As String
+    Dim gapPenalty As Integer
+    Dim i As Integer, j As Integer
+    Dim scoreDiag, scoreUp, scoreLeft, maxScore As Integer
+    Dim ws As Worksheet
+    Dim alignA As String, alignB As String
+    Dim temp As String
+
+    ' Set gap penalty
+    gapPenalty = -4
+    
+    ' Initialize amino acids order (according to BLOSUM62 matrix provided)
+    aminoAcids = "ARNDCQEGHILKMFPSTWYV"
+    
+    ' Load BLOSUM62 matrix from the worksheet
+    Set ws = ThisWorkbook.Sheets("blosum")
+    For i = 1 To 20
+        For j = 1 To 20
+            blosum62(i, j) = ws.Cells(i + 1, j + 1).Value
+        Next j
+    Next i
+    
+    ' Ask for peptides
+    refPeptide = InputBox("Enter the reference peptide:", "Reference Peptide")
+    workPeptide = InputBox("Enter the work peptide:", "Work Peptide")
+    
+    ' Write peptides and labels in the NeedlemanWunsch worksheet
+    Set ws = ThisWorkbook.Sheets("NeedlemanWunsch")
+    ws.Cells.Clear
+    ws.Cells(1, 1).Value = "Ref Peptide" ' Added line for "Ref Peptide" label
+    ws.Cells(1, 2).Value = "Work Peptide" ' Added line for "Work Peptide" label
+    
+    For i = 1 To Len(refPeptide)
+        ws.Cells(i + 1, 1).Value = Mid(refPeptide, i, 1)
+    Next i
+    
+    For i = 1 To Len(workPeptide)
+        ws.Cells(i + 1, 2).Value = Mid(workPeptide, i, 1)
+    Next i
+    
+    ' Initialize matrices
+    ReDim scoreMatrix(Len(refPeptide) + 1, Len(workPeptide) + 1)
+    ReDim tracebackMatrix(Len(refPeptide) + 1, Len(workPeptide) + 1)
+    
+    ' Initialize first row and column of the score matrix
+    For i = 0 To Len(refPeptide)
+        scoreMatrix(i, 0) = i * gapPenalty
+        tracebackMatrix(i, 0) = "?"
+    Next i
+    For j = 0 To Len(workPeptide)
+        scoreMatrix(0, j) = j * gapPenalty
+        tracebackMatrix(0, j) = "?"
+    Next j
+    tracebackMatrix(0, 0) = " "
+    
+    ' Fill in the score and traceback matrices
+    For i = 1 To Len(refPeptide)
+        For j = 1 To Len(workPeptide)
+            scoreDiag = scoreMatrix(i - 1, j - 1) + Score(aminoAcids, blosum62, Mid(refPeptide, i, 1), Mid(workPeptide, j, 1))
+            scoreUp = scoreMatrix(i - 1, j) + gapPenalty
+            scoreLeft = scoreMatrix(i, j - 1) + gapPenalty
+            maxScore = Application.WorksheetFunction.Max(scoreDiag, scoreUp, scoreLeft)
+            scoreMatrix(i, j) = maxScore
+            
+            ' Determine traceback path
+            If maxScore = scoreDiag Then
+                tracebackMatrix(i, j) = "?"
+            ElseIf maxScore = scoreUp Then
+                tracebackMatrix(i, j) = "?"
+            Else
+                tracebackMatrix(i, j) = "?"
+            End If
+        Next j
+    Next i
+    
+    ' Traceback and create alignment
+    i = Len(refPeptide)
+    j = Len(workPeptide)
+    alignA = ""
+    alignB = ""
+    
+    While i > 0 And j > 0
+        temp = tracebackMatrix(i, j)
+        If temp = "?" Then
+            alignA = Mid(refPeptide, i, 1) & alignA
+            alignB = Mid(workPeptide, j, 1) & alignB
+            i = i - 1
+            j = j - 1
+        ElseIf temp = "?" Then
+            alignA = Mid(refPeptide, i, 1) & alignA
+            alignB = "-" & alignB
+            i = i - 1
+        Else
+            alignA = "-" & alignA
+            alignB = Mid(workPeptide, j, 1) & alignB
+            j = j - 1
+        End If
+    Wend
+    
+    ' Output alignment and score matrix
+    ws.Cells(1, 3).Value = "Alignment:"
+    ws.Cells(2, 3).Value = alignA
+    ws.Cells(3, 3).Value = alignB
+    
+    For i = 0 To UBound(scoreMatrix, 1) - 1
+        For j = 0 To UBound(scoreMatrix, 2) - 1
+            ws.Cells(i + 1, j + 4).Value = scoreMatrix(i, j)
+        Next j
+    Next i
+End Sub
+
+Function Score(aminoAcids As String, matrix() As Integer, a As String, b As String) As Integer
+    Dim posA As Integer
+    Dim posB As Integer
+    
+    posA = InStr(aminoAcids, a)
+    posB = InStr(aminoAcids, b)
+    
+    If posA > 0 And posB > 0 Then
+        Score = matrix(posA, posB)
+    Else
+        Score = 0 ' In case of an error or unknown amino acid
+    End If
+End Function

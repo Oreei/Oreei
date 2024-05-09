@@ -11,6 +11,6 @@ This problem is a well-known computational problem in the fields of computer sci
 The solutions implemented in this repository explore different algorithms and techniques to solve the TSP, each with its unique approach and efficiency. 
 The methods include, bfor examples, heuristic, genetic algorithms, and brute force approaches.
 
-The Jupyter Notebook "TSP.ipynb" contains all the implementations and tests of various TSP solutions. The notebook is well-documented with comments explaining the code and methodologies.
+##### The Jupyter Notebook "TSP.ipynb" contains all the implementations and tests of various TSP solutions. The notebook is well-documented with comments explaining the code and methodologies.
 
 Please note that the contents of the notebook and comments are in French.

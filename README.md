@@ -1,5 +1,4 @@
-# Read Me
-### 👋 Hi, I’m @Oreei 
+## 👋 Hi, I’m @Oreei 
 - I have various interests from AI to to software design.
 - I attended preparatory classes for entrance into prestigious higher education institutions.
 - I am currently a student at the European School of Chemistry, Polymers, and Materials in Strasbourg (ECPM), having started there in August 2022.
